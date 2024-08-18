@@ -1,0 +1,12 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+go.work
+go.work.sum
+
+.env
+p1oneer
+!p1oneer/

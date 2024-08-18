@@ -1,0 +1,14 @@
+FROM golang:latest AS builder
+WORKDIR /app
+COPY go.mod ./
+COPY . .
+RUN go mod download
+RUN go build ./cmd/p1oneer
+
+FROM debian:latest
+
+WORKDIR /init
+COPY --from=builder /app/p1oneer .
+COPY examples /init/examples
+RUN apt update && apt install -y php-fpm nginx
+ENTRYPOINT [ "./p1oneer" ]

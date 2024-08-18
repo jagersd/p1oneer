@@ -1,0 +1,4 @@
+{
+    "type":"long",
+    "command":"php-fpm8.2 -F"
+}
