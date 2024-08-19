@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 	"os"
-	"p1oneer/internal/pparser"
-	"p1oneer/internal/proc"
+
+	"github.com/jagersd/p1oneer/internal/pparser"
+	"github.com/jagersd/p1oneer/internal/proc"
 )
 
 func main() {
