@@ -8,30 +8,45 @@ import (
 )
 
 const (
-	ErrNoReqFiles = "Err: No p1oneer configuration files found "
-	ErrReqNoRead  = "Err: The config file can't be opened "
+	ErrNoReqFiles   = "Err: No p1oneer configuration files found "
+	ErrReqNoRead    = "Err: The config file can't be opened "
+	ErrPrioConflict = "Err: Priority conflict, exiting "
 )
 
 type StartRequest struct {
-	Title   string
-	ReqType string `json:"type"`
-	Command string `json:"command"`
+	Title    string
+	Priority uint8    `json:"priority"`
+	ReqType  string   `json:"type"`
+	Command  string   `json:"command"`
+	Args     []string `json:"arguments"`
 }
 
-func ParseConfigFiles() []StartRequest {
+func ParseConfigFiles() map[uint8]StartRequest {
 	configFiles := collectRequestFiles()
 
-	var sr []StartRequest
+	var startRequests = make(map[uint8]StartRequest)
 	for _, c := range configFiles {
 		startReq := parseReqfile(c)
-		sr = append(sr, startReq)
+		if _, ok := startRequests[startReq.Priority]; ok {
+			log.Fatal(ErrPrioConflict)
+		} else {
+			startRequests[startReq.Priority] = startReq
+		}
 	}
 
-	return sr
+	return startRequests
+}
+
+func getConfigDir() string {
+	d := os.Getenv("P1ONEER_CONFIG_DIR")
+	if d == "" {
+		log.Fatal("Please set P1ONEER_CONFIG_DIR environment variable to indicate the location of your configuration files")
+	}
+	return d
 }
 
 func collectRequestFiles() []string {
-	dir := "./examples"
+	dir := getConfigDir()
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		log.Fatal(ErrNoReqFiles, err)

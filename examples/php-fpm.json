@@ -1,4 +1,6 @@
 {
     "type":"long",
-    "command":"php-fpm8.2 -F"
+    "priority":1,
+    "command":"php-fpm8.2",
+    "arguments":["-F"]
 }

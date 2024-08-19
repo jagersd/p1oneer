@@ -1,4 +1,6 @@
 {
     "type":"long",
-    "command":"/usr/sbin/nginx -g daemon off;"
+    "priority":2,
+    "command":"/usr/sbin/nginx",
+    "arguments":["-g","daemon off;"]
 }

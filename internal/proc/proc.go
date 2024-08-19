@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 )
 
@@ -13,9 +12,8 @@ type Proc struct {
 	args        []string
 }
 
-func (P *Proc) StartLong(command string, signalChannel chan (os.Signal)) {
-	P.generateStartCommand(command)
-	cmd := exec.Command(P.commandName, P.args...)
+func (P *Proc) StartLong(command string, args []string, signalChannel chan (os.Signal)) {
+	cmd := exec.Command(command, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -26,6 +24,7 @@ func (P *Proc) StartLong(command string, signalChannel chan (os.Signal)) {
 	go func() {
 		if err := cmd.Wait(); err != nil {
 			log.Printf(P.commandName+" exited with error: %v", err)
+			os.Exit(err.(*exec.ExitError).ExitCode())
 		} else {
 			log.Println(P.commandName, " exited successfully")
 		}
@@ -42,16 +41,12 @@ func (P *Proc) StartLong(command string, signalChannel chan (os.Signal)) {
 	os.Exit(0)
 }
 
-func (P *Proc) generateStartCommand(s string) {
-	split := strings.Split(s, " ")
-	P.commandName = split[0]
-	if len(split) > 1 {
-		P.args = split[1:]
-	} else {
-		P.args = []string{""}
-	}
+func (P *Proc) StartOne(command string, args []string) {
+	cmd := exec.Command(command, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	if P.commandName == "/usr/sbin/nginx" {
-		P.args = []string{"-g", "daemon off;"}
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("command %s failed with error: %v", command, err)
 	}
 }

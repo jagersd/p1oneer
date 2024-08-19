@@ -8,7 +8,7 @@ RUN go build ./cmd/p1oneer
 FROM debian:latest
 
 WORKDIR /init
+ENV P1ONEER_CONFIG_DIR=/init/p1-configs
 COPY --from=builder /app/p1oneer .
-COPY examples /init/examples
 RUN apt update && apt install -y php-fpm nginx
 ENTRYPOINT [ "./p1oneer" ]
