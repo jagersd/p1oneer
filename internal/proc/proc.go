@@ -12,7 +12,7 @@ type Proc struct {
 	args        []string
 }
 
-func (P *Proc) StartLong(command string, args []string, signalChannel chan (os.Signal)) {
+func (P *Proc) StartLong(command string, args []string) {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -20,6 +20,8 @@ func (P *Proc) StartLong(command string, args []string, signalChannel chan (os.S
 	if err := cmd.Start(); err != nil {
 		log.Fatalf("Failed to start %s with Err: %v", P.commandName, err)
 	}
+
+	hub.ProcessChannel <- cmd.Process
 
 	go func() {
 		if err := cmd.Wait(); err != nil {
@@ -31,7 +33,7 @@ func (P *Proc) StartLong(command string, args []string, signalChannel chan (os.S
 		os.Exit(0)
 	}()
 
-	<-signalChannel
+	<-hub.SignalChannel
 
 	if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
 		log.Printf("Failed to send SIGTERM to %s: %v", P.commandName, err)

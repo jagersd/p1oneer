@@ -2,5 +2,6 @@
     "type":"long",
     "priority":1,
     "command":"php-fpm8.2",
-    "arguments":["-F"]
+    "arguments":["-F"],
+    "ignore":true
 }

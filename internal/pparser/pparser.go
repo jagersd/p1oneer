@@ -19,6 +19,7 @@ type StartRequest struct {
 	ReqType  string   `json:"type"`
 	Command  string   `json:"command"`
 	Args     []string `json:"arguments"`
+	Ignore   bool     `json:"ignore"` //optional for testing purposes
 }
 
 func ParseConfigFiles() map[uint8]StartRequest {
@@ -27,6 +28,10 @@ func ParseConfigFiles() map[uint8]StartRequest {
 	var startRequests = make(map[uint8]StartRequest)
 	for _, c := range configFiles {
 		startReq := parseReqfile(c)
+		if startReq.Ignore {
+			continue
+		}
+
 		if _, ok := startRequests[startReq.Priority]; ok {
 			log.Fatal(ErrPrioConflict)
 		} else {
@@ -75,7 +80,7 @@ func parseReqfile(reqFileName string) StartRequest {
 	var request StartRequest
 	request.Title = strings.Replace(reqFileName, ".json", "", 1)
 	if err := json.Unmarshal(b, &request); err != nil {
-		log.Fatal(ErrReqNoRead, err)
+		log.Fatal(ErrReqNoRead, request.Title, err)
 	}
 	return request
 }

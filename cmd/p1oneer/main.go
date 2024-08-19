@@ -3,17 +3,12 @@ package main
 import (
 	"log"
 	"os"
-	"os/signal"
 	"p1oneer/internal/pparser"
 	"p1oneer/internal/proc"
-	"syscall"
 )
 
-var signalChannel chan os.Signal
-
 func main() {
-	signalChannel = make(chan os.Signal, 1)
-	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
+	proc.StartProcessHub()
 
 	requests := pparser.ParseConfigFiles()
 	for i := 0; i <= 255; i++ {
@@ -23,7 +18,7 @@ func main() {
 		}
 	}
 
-	<-signalChannel
+	proc.Monitor()
 
 	log.Println("Received termination signal, shutting down...")
 
@@ -34,7 +29,7 @@ func startProc(request pparser.StartRequest) {
 	var p proc.Proc
 	switch request.ReqType {
 	case "long":
-		go p.StartLong(request.Command, request.Args, signalChannel)
+		go p.StartLong(request.Command, request.Args)
 	case "once":
 		go p.StartOne(request.Command, request.Args)
 	}

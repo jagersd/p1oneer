@@ -1,0 +1,8 @@
+{
+    "type":"long",
+    "priority":1,
+    "command":"sleep",
+    "arguments":["5h"],
+    "ignore":false
+}
+

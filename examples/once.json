@@ -2,6 +2,7 @@
     "type":"once",
     "priority":10,
     "command":"echo",
-    "arguments":["'hey there!'"]
+    "arguments":["'hey there!'"],
+    "ignore":true
 }
 
