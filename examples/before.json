@@ -1,6 +1,6 @@
 {
-    "type":"once",
-    "priority":11,
+    "type":"before",
+    "priority":10,
     "command":"echo",
     "arguments":["'hey there!'"],
     "ignore":false

@@ -1,6 +1,7 @@
 package proc
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -8,24 +9,32 @@ import (
 )
 
 type Proc struct {
+	reportTitle string
 	commandName string
-	args        []string
+	cmd         *exec.Cmd
 }
 
-func (P *Proc) StartLong(command string, args []string) {
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func NewProcess(title string, command string, args []string) *Proc {
+	p := Proc{
+		commandName: command,
+		cmd:         exec.Command(command, args...),
+	}
+	p.cmd.Stdout = os.Stdout
+	p.cmd.Stderr = os.Stderr
 
-	if err := cmd.Start(); err != nil {
-		log.Fatalf("Failed to start %s with Err: %v", P.commandName, err)
+	return &p
+}
+
+func (P *Proc) StartLong() {
+	if err := P.cmd.Start(); err != nil {
+		log.Fatalf("Failed to start %s with Err: %v", P.reportTitle, err)
 	}
 
-	hub.processChannel <- cmd.Process
+	hub.processChannel <- P.cmd.Process
 
 	go func() {
-		if err := cmd.Wait(); err != nil {
-			log.Printf("%s exited with error:%d %v", P.commandName, err.(*exec.ExitError).ExitCode(), err)
+		if err := P.cmd.Wait(); err != nil {
+			log.Printf("%s exited with error:%d %v", P.reportTitle, err.(*exec.ExitError).ExitCode(), err)
 		} else {
 			log.Println(P.commandName, " exited successfully")
 		}
@@ -33,12 +42,24 @@ func (P *Proc) StartLong(command string, args []string) {
 	}()
 }
 
-func (P *Proc) StartOne(command string, args []string) {
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func (P *Proc) StartOne() {
+	if err := P.cmd.Start(); err != nil {
+		log.Fatalf("command %s failed with error: %v", P.reportTitle, err)
+	}
 
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("command %s failed with error: %v", command, err)
+	go func(process *os.Process) {
+		if state, err := process.Wait(); err != nil {
+			log.Printf("Single execution process failed with exit code %d error: %v", state.ExitCode(), err)
+			hub.signalChannel <- syscall.SIGTERM
+		} else {
+			fmt.Println("Single execution process done. Reaping pid: ", state.Pid())
+		}
+
+	}(P.cmd.Process)
+}
+
+func (P *Proc) StartBefore() {
+	if err := P.cmd.Run(); err != nil {
+		log.Fatalf("command %s failed with error: %v", P.reportTitle, err)
 	}
 }

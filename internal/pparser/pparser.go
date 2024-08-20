@@ -79,6 +79,7 @@ func parseReqfile(reqFileName string) StartRequest {
 	}
 	var request StartRequest
 	request.Title = strings.Replace(reqFileName, ".json", "", 1)
+	request.Title = strings.ToLower(request.Title)
 	if err := json.Unmarshal(b, &request); err != nil {
 		log.Fatal(ErrReqNoRead, request.Title, err)
 	}

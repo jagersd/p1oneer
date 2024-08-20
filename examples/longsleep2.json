@@ -1,6 +1,6 @@
 {
     "type":"long",
-    "priority":2,
+    "priority":200,
     "command":"sleep",
     "arguments":["3h"],
     "ignore":false

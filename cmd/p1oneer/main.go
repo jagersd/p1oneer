@@ -27,11 +27,18 @@ func main() {
 }
 
 func startProcess(request pparser.StartRequest) {
-	var p proc.Proc
+	p := proc.NewProcess(
+		request.Title,
+		request.Command,
+		request.Args,
+	)
+
 	switch request.ReqType {
 	case "long":
-		go p.StartLong(request.Command, request.Args)
+		go p.StartLong()
 	case "once":
-		go p.StartOne(request.Command, request.Args)
+		p.StartOne()
+	case "before":
+		p.StartBefore()
 	}
 }
