@@ -15,18 +15,18 @@ func main() {
 	for i := 0; i <= 255; i++ {
 		if r, ok := requests[uint8(i)]; ok {
 			log.Println("Starting", r.Title)
-			startProc(r)
+			startProcess(r)
 		}
 	}
 
 	proc.Monitor()
 
-	log.Println("Received termination signal, shutting down...")
+	log.Println("Received termination signal, shutting down p1oneer")
 
 	os.Exit(0)
 }
 
-func startProc(request pparser.StartRequest) {
+func startProcess(request pparser.StartRequest) {
 	var p proc.Proc
 	switch request.ReqType {
 	case "long":

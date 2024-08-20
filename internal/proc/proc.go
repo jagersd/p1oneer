@@ -21,26 +21,16 @@ func (P *Proc) StartLong(command string, args []string) {
 		log.Fatalf("Failed to start %s with Err: %v", P.commandName, err)
 	}
 
-	hub.ProcessChannel <- cmd.Process
+	hub.processChannel <- cmd.Process
 
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			log.Printf(P.commandName+" exited with error: %v", err)
-			os.Exit(err.(*exec.ExitError).ExitCode())
+			log.Printf("%s exited with error:%d %v", P.commandName, err.(*exec.ExitError).ExitCode(), err)
 		} else {
 			log.Println(P.commandName, " exited successfully")
 		}
-		os.Exit(0)
+		hub.signalChannel <- syscall.SIGTERM
 	}()
-
-	<-hub.SignalChannel
-
-	if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
-		log.Printf("Failed to send SIGTERM to %s: %v", P.commandName, err)
-	}
-
-	syscall.Kill(cmd.Process.Pid, syscall.SIGTERM)
-	os.Exit(0)
 }
 
 func (P *Proc) StartOne(command string, args []string) {
