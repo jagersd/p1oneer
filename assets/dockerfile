@@ -9,6 +9,7 @@ FROM debian:latest
 WORKDIR /init
 ENV P1ONEER_CONFIG_DIR=/init/p1-configs
 COPY ./examples/*.json /init/p1-configs/
-COPY --from=builder /app/p1oneer .
+COPY --from=builder /app/p1oneer /init/bin/p1oneer
+ENV PATH="$PATH:/init/bin"
 RUN apt update && apt install -y php-fpm nginx
-ENTRYPOINT [ "./p1oneer" ]
+ENTRYPOINT [ "p1oneer" ]

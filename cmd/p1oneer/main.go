@@ -27,7 +27,7 @@ func main() {
 }
 
 func startProcess(request pparser.StartRequest) {
-	p := proc.NewProcess(
+	p := proc.NewProcessWrapper(
 		request.Title,
 		request.Command,
 		request.Args,

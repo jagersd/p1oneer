@@ -1,7 +1,6 @@
 package proc
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -48,9 +47,9 @@ func startMonitorRoutine() {
 		select {
 		case proc := <-hub.processChannel:
 			hub.processes = append(hub.processes, proc)
-			fmt.Println("Pid started:", proc.Pid)
+			log.Println("Pid started:", proc.Pid)
 		case <-hub.signalChannel:
-			fmt.Println("Received signal, stopping all processes")
+			log.Println("Received signal, stopping all processes")
 			hub.stopAllProcesses()
 		}
 	}

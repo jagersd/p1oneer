@@ -1,6 +1,6 @@
 {
     "type":"long",
-    "priority":1,
+    "priority":4,
     "command":"php-fpm8.2",
     "arguments":["-F"],
     "ignore":true

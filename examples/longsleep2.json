@@ -3,6 +3,7 @@
     "priority":200,
     "command":"sleep",
     "arguments":["3h"],
+    "user-group":"www-data:www-data",
     "ignore":false
 }
 

@@ -8,18 +8,24 @@ import (
 )
 
 const (
-	ErrNoReqFiles   = "Err: No p1oneer configuration files found "
-	ErrReqNoRead    = "Err: The config file can't be opened "
-	ErrPrioConflict = "Err: Priority conflict, exiting "
+	ErrNoReqFiles    = "Err: No p1oneer configuration files found "
+	ErrReqNoRead     = "Err: The config file can't be opened "
+	ErrPrioConflict  = "Err: Priority conflict, exiting "
+	ErrUserNotFound  = "Err: No UID for provided user "
+	ErrGroupNotFound = "Err: No GID for provided group "
+	ErrSyntax        = "Err: incorrect config syntax provided "
 )
 
 type StartRequest struct {
-	Title    string
-	Priority uint8    `json:"priority"`
-	ReqType  string   `json:"type"`
-	Command  string   `json:"command"`
-	Args     []string `json:"arguments"`
-	Ignore   bool     `json:"ignore"` //optional for testing purposes
+	Title     string
+	Priority  uint8    `json:"priority"`
+	ReqType   string   `json:"type"`
+	Command   string   `json:"command"`
+	Args      []string `json:"arguments"`
+	Ignore    bool     `json:"ignore"` //optional for testing purposes
+	UserGroup string   `json:"user-group"`
+	UID       int
+	GID       int
 }
 
 func ParseConfigFiles() map[uint8]StartRequest {
@@ -83,5 +89,12 @@ func parseReqfile(reqFileName string) StartRequest {
 	if err := json.Unmarshal(b, &request); err != nil {
 		log.Fatal(ErrReqNoRead, request.Title, err)
 	}
+
+	if request.UserGroup != "" {
+		uid, gid := parseUIDGIDvalue(request.UserGroup)
+		request.UID = int(uid)
+		request.GID = int(gid)
+	}
+
 	return request
 }

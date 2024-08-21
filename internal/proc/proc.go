@@ -8,24 +8,35 @@ import (
 	"syscall"
 )
 
-type Proc struct {
+type ProcessWrapper struct {
 	reportTitle string
 	commandName string
 	cmd         *exec.Cmd
 }
 
-func NewProcess(title string, command string, args []string) *Proc {
-	p := Proc{
+func NewProcessWrapper(title string, command string, args []string) *ProcessWrapper {
+	p := ProcessWrapper{
 		commandName: command,
 		cmd:         exec.Command(command, args...),
 	}
 	p.cmd.Stdout = os.Stdout
 	p.cmd.Stderr = os.Stderr
 
+	p.cmd.SysProcAttr = &syscall.SysProcAttr{}
+	p.cmd.SysProcAttr.Credential = &syscall.Credential{}
+
 	return &p
 }
 
-func (P *Proc) StartLong() {
+func setUIDGID(cmd *exec.Cmd, uid, gid uint32) {
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr.Credential = &syscall.Credential{
+		Uid: uid,
+		Gid: gid,
+	}
+}
+
+func (P *ProcessWrapper) StartLong() {
 	if err := P.cmd.Start(); err != nil {
 		log.Fatalf("Failed to start %s with Err: %v", P.reportTitle, err)
 	}
@@ -42,7 +53,7 @@ func (P *Proc) StartLong() {
 	}()
 }
 
-func (P *Proc) StartOne() {
+func (P *ProcessWrapper) StartOne() {
 	if err := P.cmd.Start(); err != nil {
 		log.Fatalf("command %s failed with error: %v", P.reportTitle, err)
 	}
@@ -58,7 +69,7 @@ func (P *Proc) StartOne() {
 	}(P.cmd.Process)
 }
 
-func (P *Proc) StartBefore() {
+func (P *ProcessWrapper) StartBefore() {
 	if err := P.cmd.Run(); err != nil {
 		log.Fatalf("command %s failed with error: %v", P.reportTitle, err)
 	}
