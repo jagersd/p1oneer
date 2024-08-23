@@ -22,9 +22,6 @@ func NewProcessWrapper(title string, command string, args []string) *ProcessWrap
 	p.cmd.Stdout = os.Stdout
 	p.cmd.Stderr = os.Stderr
 
-	p.cmd.SysProcAttr = &syscall.SysProcAttr{}
-	p.cmd.SysProcAttr.Credential = &syscall.Credential{}
-
 	return &p
 }
 

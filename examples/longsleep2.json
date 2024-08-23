@@ -1,8 +1,8 @@
 {
     "type":"long",
     "priority":200,
-    "command":"sleep",
-    "arguments":["3h"],
+    "command":"python3",
+    "arguments":["assets/testscripts/childpstarter.py"],
     "user-group":"www-data:www-data",
     "ignore":false
 }

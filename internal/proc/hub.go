@@ -1,10 +1,12 @@
 package proc
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type channelHub struct {
@@ -32,8 +34,8 @@ func (hub *channelHub) stopAllProcesses() {
 
 func StartProcessHub() {
 	hub = channelHub{
-		signalChannel:  make(chan os.Signal),
-		processChannel: make(chan *os.Process),
+		signalChannel:  make(chan os.Signal, 1),
+		processChannel: make(chan *os.Process, 1),
 	}
 	signal.Notify(hub.signalChannel, syscall.SIGINT, syscall.SIGTERM)
 }
@@ -43,6 +45,7 @@ func Monitor() {
 }
 
 func startMonitorRoutine() {
+	go reapZombies()
 	for {
 		select {
 		case proc := <-hub.processChannel:
@@ -52,5 +55,21 @@ func startMonitorRoutine() {
 			log.Println("Received signal, stopping all processes")
 			hub.stopAllProcesses()
 		}
+	}
+}
+
+func reapZombies() {
+	for {
+		pid, err := syscall.Wait4(-1, nil, syscall.WNOHANG, nil)
+		if pid <= 0 {
+			fmt.Println("No zombie processes were reaped, sleeping for a bit...")
+			time.Sleep(10 * time.Second) // Sleep for a bit before the next check
+			continue
+		}
+		if err != nil {
+			fmt.Printf("Error waiting for zombie processes: %v\n", err)
+		}
+
+		fmt.Printf("Reaped zombie process with PID %d\n", pid)
 	}
 }
