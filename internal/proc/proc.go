@@ -21,12 +21,14 @@ func NewProcessWrapper(title string, command string, args []string) *ProcessWrap
 	}
 	p.cmd.Stdout = os.Stdout
 	p.cmd.Stderr = os.Stderr
+	p.cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
 
 	return &p
 }
 
 func setUIDGID(cmd *exec.Cmd, uid, gid uint32) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{}
 	cmd.SysProcAttr.Credential = &syscall.Credential{
 		Uid: uid,
 		Gid: gid,

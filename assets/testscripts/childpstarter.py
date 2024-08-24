@@ -5,6 +5,6 @@ subprocess.Popen(['curl', '-v', 'stefandejager.nl'])
 
 while True:
     subprocess.Popen(['echo', 'Hello from subprocess'])
-    time.sleep(5)
+    time.sleep(3000)
 
 

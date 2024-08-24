@@ -1,7 +1,6 @@
 package proc
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -59,17 +58,11 @@ func startMonitorRoutine() {
 }
 
 func reapZombies() {
+	reaper := reaper{}
 	for {
-		pid, err := syscall.Wait4(-1, nil, syscall.WNOHANG, nil)
-		if pid <= 0 {
-			fmt.Println("No zombie processes were reaped, sleeping for a bit...")
-			time.Sleep(10 * time.Second) // Sleep for a bit before the next check
-			continue
+		if err := reaper.scan(); err != nil {
+			log.Println(err)
 		}
-		if err != nil {
-			fmt.Printf("Error waiting for zombie processes: %v\n", err)
-		}
-
-		fmt.Printf("Reaped zombie process with PID %d\n", pid)
+		time.Sleep(time.Second * 3)
 	}
 }
