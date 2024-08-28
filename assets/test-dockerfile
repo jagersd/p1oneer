@@ -1,5 +1,6 @@
 FROM golang:1.23.0-bookworm
 ENV P1ONEER_CONFIG_DIR=/app/examples
+ENV PATH="$PATH:/init/bin"
 WORKDIR /app
 
 

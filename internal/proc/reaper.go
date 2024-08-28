@@ -16,6 +16,7 @@ type reaper struct{}
 const statfmt = "%s %d"
 
 func (r *reaper) scan() error {
+	log.Println("Scanning for zombies")
 	managedPids := r.getMonitoredPids()
 	if len(managedPids) == 0 {
 		return nil
@@ -50,7 +51,7 @@ func (r *reaper) scan() error {
 				log.Println("string to pid conversion err", err)
 				continue
 			} else {
-				r.kill(p)
+				r.kill(ppid, p)
 			}
 		}
 	}
@@ -58,33 +59,35 @@ func (r *reaper) scan() error {
 	return nil
 }
 
-func (r *reaper) kill(pid int) {
+func (r *reaper) kill(ppid, pid int) {
 	fmt.Println("Reaping:", pid)
-	p, err := os.FindProcess(pid)
+	p, err := os.FindProcess(ppid)
+	p.Signal(syscall.SIGCHLD)
 	if err != nil {
-		log.Println("os err pid not found", err)
+		log.Println("Error finding process", err)
+		return
 	}
-	if err := p.Kill(); err != nil {
-		log.Println("pid could not be killed", err)
-	}
-	if err := p.Signal(os.Kill); err != nil {
-		log.Println("Unable to send signal", err)
-	}
-	err = syscall.Kill(pid, syscall.SIGKILL)
+	group, err := syscall.Getpgid(ppid)
 	if err != nil {
-		log.Printf("Unable to kill pid %d ", err)
+		log.Println("Error getting pgid", err)
+	} else {
+		log.Println("Group:", -group)
+	}
+	//if err := syscall.Kill(-group, 15); err != nil {
+	//	log.Println("Error sending SIGTERM", err)
+	//}
+	zombie, err := os.FindProcess(pid)
+	if err != nil {
+		log.Println("Error finding zombie process", pid, err)
+	}
+	if _, err := zombie.Wait(); err != nil {
+		log.Println("Zombie ", pid, "reaped")
 	}
 }
 
 func (r *reaper) getMonitoredPids() []int {
 	var pids []int
 	for _, p := range hub.processes {
-		err := syscall.Kill(p.Pid, syscall.SIGCHLD)
-		if err != nil {
-			fmt.Printf("Error sending SIGCHLD to process %d: %v\n", p.Pid, err)
-		} else {
-			fmt.Printf("Successfully sent SIGCHLD to process %d\n", p.Pid)
-		}
 		pids = append(pids, p.Pid)
 	}
 	return pids

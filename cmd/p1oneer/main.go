@@ -20,7 +20,6 @@ func main() {
 	}
 
 	proc.Monitor()
-
 	log.Println("Received termination signal, shutting down p1oneer")
 
 	os.Exit(0)

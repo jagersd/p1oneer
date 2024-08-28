@@ -10,6 +10,7 @@ import (
 
 type channelHub struct {
 	signalChannel  chan (os.Signal)
+	chldChannel    chan (os.Signal)
 	processChannel chan (*os.Process)
 	processes      []*os.Process
 }
@@ -33,10 +34,12 @@ func (hub *channelHub) stopAllProcesses() {
 
 func StartProcessHub() {
 	hub = channelHub{
-		signalChannel:  make(chan os.Signal, 1),
-		processChannel: make(chan *os.Process, 1),
+		signalChannel:  make(chan os.Signal, 2),
+		chldChannel:    make(chan os.Signal, 2),
+		processChannel: make(chan *os.Process, 2),
 	}
 	signal.Notify(hub.signalChannel, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(hub.chldChannel, syscall.SIGCHLD)
 }
 
 func Monitor() {
@@ -44,7 +47,7 @@ func Monitor() {
 }
 
 func startMonitorRoutine() {
-	go reapZombies()
+	go reapChld()
 	for {
 		select {
 		case proc := <-hub.processChannel:
@@ -57,12 +60,11 @@ func startMonitorRoutine() {
 	}
 }
 
-func reapZombies() {
+func reapChld() {
+	time.Sleep(5 * time.Second)
 	reaper := reaper{}
 	for {
-		if err := reaper.scan(); err != nil {
-			log.Println(err)
-		}
-		time.Sleep(time.Second * 3)
+		reaper.scan()
+		time.Sleep(2 * time.Second)
 	}
 }
