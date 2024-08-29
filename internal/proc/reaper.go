@@ -62,10 +62,14 @@ func (r *reaper) scan() error {
 func (r *reaper) kill(ppid, pid int) {
 	fmt.Println("Reaping:", pid)
 	p, err := os.FindProcess(ppid)
-	p.Signal(syscall.SIGCHLD)
 	if err != nil {
 		log.Println("Error finding process", err)
 		return
+	}
+	if ppid != 1 {
+		if err := p.Signal(syscall.SIGCHLD); err != nil {
+			log.Println("SIGCHLD could not be send for parent pid", ppid, " ", err)
+		}
 	}
 	group, err := syscall.Getpgid(ppid)
 	if err != nil {
@@ -73,20 +77,19 @@ func (r *reaper) kill(ppid, pid int) {
 	} else {
 		log.Println("Group:", -group)
 	}
-	//if err := syscall.Kill(-group, 15); err != nil {
-	//	log.Println("Error sending SIGTERM", err)
-	//}
 	zombie, err := os.FindProcess(pid)
 	if err != nil {
 		log.Println("Error finding zombie process", pid, err)
 	}
 	if _, err := zombie.Wait(); err != nil {
+		log.Println("Error waiting for zombie", err)
+	} else {
 		log.Println("Zombie ", pid, "reaped")
 	}
 }
 
 func (r *reaper) getMonitoredPids() []int {
-	var pids []int
+	var pids []int = []int{1}
 	for _, p := range hub.processes {
 		pids = append(pids, p.Pid)
 	}

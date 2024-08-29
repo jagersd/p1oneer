@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 type channelHub struct {
@@ -53,6 +52,8 @@ func startMonitorRoutine() {
 		case proc := <-hub.processChannel:
 			hub.processes = append(hub.processes, proc)
 			log.Println("Pid started:", proc.Pid)
+		case <-hub.chldChannel:
+			go reapChld()
 		case <-hub.signalChannel:
 			log.Println("Received signal, stopping all processes")
 			hub.stopAllProcesses()
@@ -61,10 +62,6 @@ func startMonitorRoutine() {
 }
 
 func reapChld() {
-	time.Sleep(5 * time.Second)
 	reaper := reaper{}
-	for {
-		reaper.scan()
-		time.Sleep(2 * time.Second)
-	}
+	reaper.scan()
 }
