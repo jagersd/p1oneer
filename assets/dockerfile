@@ -1,14 +1,10 @@
 FROM golang:latest AS builder
-WORKDIR /app
+WORKDIR /build
 COPY go.mod ./
 COPY . .
 RUN go mod download
 RUN go build ./cmd/p1oneer
 
-FROM debian:latest
-WORKDIR /init
-ENV P1ONEER_CONFIG_DIR=/init/p1-configs
-#COPY ./examples/*.json /init/p1-configs/
-COPY --from=builder /app/p1oneer /init/bin/p1oneer
-ENV PATH="$PATH:/init/bin"
-ENTRYPOINT [ "p1oneer" ]
+FROM scratch
+COPY --from=builder /build/p1oneer p1oneer
+

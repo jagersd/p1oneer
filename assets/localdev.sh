@@ -11,9 +11,8 @@ check_image () {
     fi
 }
 
-check_image
-if [ $? -eq 0 ]; then
-    cd "$HOME"/projects/p1oneer && docker build -f assets/test-dockerfile -t "$containerName" .
+if [ "$(check_image)" ]; then
+    cd "$HOME"/projects/p1oneer && docker build -f assets/local.dockerfile -t "$containerName" .
 fi
 
 digIn () {

@@ -54,8 +54,8 @@ func startMonitorRoutine() {
 			log.Println("Pid started:", proc.Pid)
 		case <-hub.chldChannel:
 			go reapChld()
-		case <-hub.signalChannel:
-			log.Println("Received signal, stopping all processes")
+		case sig := <-hub.signalChannel:
+			log.Printf("%s received, stopping all processes \n", sig.String())
 			hub.stopAllProcesses()
 		}
 	}
